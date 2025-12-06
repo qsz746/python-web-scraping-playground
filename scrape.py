@@ -4,7 +4,7 @@ from urllib.parse import urljoin
 import time
 import re
 
-# 从 config 和 storage 导入配置 & 保存函数
+ 
 from config import (
     START_URL,
     USER_AGENT,
@@ -14,7 +14,7 @@ from config import (
 )
 from storage import save_books_to_csv
 
-# 创建 session，并使用 config 里的 USER_AGENT
+ 
 session = requests.Session()
 session.headers.update({
     "User-Agent": USER_AGENT
@@ -65,17 +65,10 @@ def crawl_category(start_url):
         if next_link:
             next_href = next_link["href"]           # "page-2.html"
             url = urljoin(url, next_href)           # build new page
-            time.sleep(REQUEST_DELAY)               # 使用 config 里的延时
+            time.sleep(REQUEST_DELAY)                
         else:
             url = None
 
     return books
 
-
-if __name__ == "__main__":
-    books = crawl_category(START_URL)
-    print(f"Total books in Sequential Art: {len(books)}")
-
-    # save to CSV：使用 storage.py 里的函数
-    if books:
-        save_books_to_csv(books, OUTPUT_FILENAME)
+ 
