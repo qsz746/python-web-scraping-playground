@@ -2,14 +2,22 @@ import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 import time
-import csv
 import re
 
-START_URL = "https://books.toscrape.com/catalogue/category/books/sequential-art_5/index.html"
+# 从 config 和 storage 导入配置 & 保存函数
+from config import (
+    START_URL,
+    USER_AGENT,
+    REQUEST_TIMEOUT,
+    REQUEST_DELAY,
+    OUTPUT_FILENAME,
+)
+from storage import save_books_to_csv
 
+# 创建 session，并使用 config 里的 USER_AGENT
 session = requests.Session()
 session.headers.update({
-    "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) Python scraper demo"
+    "User-Agent": USER_AGENT
 })
 
 
@@ -21,10 +29,9 @@ def parse_book(article, page_url):
     availability = article.select_one("p.instock.availability").text.strip()
     rating = article.select_one("p.star-rating")["class"][1]  # get stars
 
-     
     detail_href = article.h3.a["href"]
     detail_url = urljoin(page_url, detail_href)
- 
+
     img_src = article.select_one("div.image_container img")["src"]
     img_url = urljoin(page_url, img_src)
 
@@ -44,7 +51,7 @@ def crawl_category(start_url):
 
     while url:
         print(f"Crawling: {url}")
-        res = session.get(url, timeout=10)
+        res = session.get(url, timeout=REQUEST_TIMEOUT)
         res.raise_for_status()
 
         soup = BeautifulSoup(res.text, "html.parser")
@@ -58,7 +65,7 @@ def crawl_category(start_url):
         if next_link:
             next_href = next_link["href"]           # "page-2.html"
             url = urljoin(url, next_href)           # build new page
-            time.sleep(1)                           # add delay
+            time.sleep(REQUEST_DELAY)               # 使用 config 里的延时
         else:
             url = None
 
@@ -69,11 +76,6 @@ if __name__ == "__main__":
     books = crawl_category(START_URL)
     print(f"Total books in Sequential Art: {len(books)}")
 
-    # save to CSV
+    # save to CSV：使用 storage.py 里的函数
     if books:
-        with open("sequential_art_books.csv", "w", newline="", encoding="utf-8-sig") as f:
-            writer = csv.DictWriter(f, fieldnames=books[0].keys())
-            writer.writeheader()
-            writer.writerows(books)
-
-        print("Saved to sequential_art_books.csv")
+        save_books_to_csv(books, OUTPUT_FILENAME)
