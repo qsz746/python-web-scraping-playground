@@ -11,6 +11,7 @@ from config import (
     REQUEST_TIMEOUT,
     REQUEST_DELAY,
     OUTPUT_FILENAME,
+    BASE_URL, 
 )
 from storage import save_books_to_csv
 
@@ -43,6 +44,23 @@ def parse_book(article, page_url):
         "detail_url": detail_url,
         "image_url": img_url,
     }
+
+
+def get_all_categories():
+    res = session.get(BASE_URL, timeout=REQUEST_TIMEOUT)
+    res.raise_for_status()
+    soup = BeautifulSoup(res.text, "html.parser")
+
+    categories = {}
+    # 左侧导航栏里的分类
+    for a in soup.select("ul.nav-list ul li a"):
+        name = a.get_text(strip=True)           
+        href = a["href"]                       
+        url = urljoin(BASE_URL, href)          
+        categories[name.lower()] = url        
+
+    return categories
+
 
 
 def crawl_category(start_url):

@@ -1,4 +1,5 @@
- 
+BASE_URL = "https://books.toscrape.com/" 
+
 START_URL = "https://books.toscrape.com/catalogue/category/books/sequential-art_5/index.html"
 
  
