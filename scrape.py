@@ -52,7 +52,7 @@ def get_all_categories():
     soup = BeautifulSoup(res.text, "html.parser")
 
     categories = {}
-    # 左侧导航栏里的分类
+    
     for a in soup.select("ul.nav-list ul li a"):
         name = a.get_text(strip=True)           
         href = a["href"]                       
